@@ -3,6 +3,7 @@ import time
 import matplotlib.pyplot as plt
 
 load("fracLLL.sage")
+load("fracDeepLLL.sage")
 
 def rand_mat(n):
     basis = matrix(ZZ, n, n)
@@ -29,7 +30,7 @@ if __name__ == '__main__':
         d = copy(b)
         
         s = time.perf_counter()
-        b = frac_lll(b, N, 99, 100)
+        b = frac_deep_lll(b, N, 99, 100)
         e = time.perf_counter()
         frac_lll_gso_time.append(e - s)
         print(f"{N}: fracLLL ended {e - s}")

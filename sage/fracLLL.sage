@@ -1,98 +1,8 @@
 NUM = 0
 DEN = 1
 
-def frac_gso(basis: sage.matrix.matrix_integer_dense.Matrix_integer_dense, n: int) -> tuple:
-    """Compute Gram-Schmidt orthogonalization information as rational number
-
-    Args:
-        basis (sage.matrix.matrix_integer_dense.Matrix_integer_dense): Lattice basis
-        n (int): Rank of lattice
-
-    Returns:
-        tuple: Tuple of Gram-Schmidt orthogonalization informations
-    """
-    G = basis * basis.transpose()
-    B_num = vector(ZZ, n)
-    B_den = vector(ZZ, n)
-    mu_num = identity_matrix(ZZ, n)
-    mu_den = matrix(ZZ, n, n)
-    D = matrix(ZZ, n, n)
-    for i in xsrange(n):
-        for j in xsrange(n):
-            mu_den[i, j] = 1
-
-    for i in xsrange(n):
-        for j in xsrange(n):
-            if (i == 0) and (j == 0):
-                D[i, j] = 1
-            else:
-                d = matrix(ZZ, i, i)
-                for k in xsrange(i):
-                    if k < j:
-                        d[k] = G[k, : i]
-                    else:
-                        d[k] = G[k + 1, : i]
-                D[i, j] = d.det()
-
-    for i in xsrange(n):
-        sum = 0
-        for j in xsrange(i + 1):
-            for k in xsrange(i + 1):
-                if ((j + k) & 1) == 0:
-                    sum += D[i, j] * D[i, k] * G[j, k]
-                else:
-                    sum -= D[i, j] * D[i, k] * G[j, k]
-        B_num[i] = sum
-        B_den[i] = D[i, i] * D[i, i]
-        d = gcd(B_num[i], B_den[i])
-        B_num[i] //= d
-        B_den[i] //= d
-
-        for j in xsrange(i):
-            sum = 0
-            for k in xsrange(j + 1):
-                if ((j + k) & 1) == 0:
-                    sum += D[j, k] * G[i, k]
-                else:
-                    sum -= D[j, k] * G[i, k]
-            mu_num[i, j] = D[j, j] * sum
-            
-            sum = 0
-            for k in xsrange(j + 1):
-                for l in xsrange(j + 1):
-                    if ((k + l) & 1) == 0:
-                        sum += D[j, k] * D[j, l] * G[k, l]
-                    else:
-                        sum -= D[j, k] * D[j, l] * G[k, l]
-            mu_den[i, j] = sum
-            d = gcd(mu_num[i, j], mu_den[i, j])
-            mu_num[i, j] //= d
-            mu_den[i, j] //= d
-    return [B_num, B_den], [mu_num, mu_den]
-    
-
-def frac_size(basis: sage.matrix.matrix_integer_dense.Matrix_integer_dense, mu: list, i: int, j: int) -> tuple:
-    """Size-reduction with rational number representation.
-
-    Args:
-        basis (sage.matrix.matrix_integer_dense.Matrix_integer_dense): Lattice basis.
-        mu (list): Gram-Schmidt orthogonalization coefficients matrix
-        i (int): index
-        j (int): index
-
-    Returns:
-        tuple: Tuple of updated lattice basis and  Gram-Schmidt orthogonalization coefficients matrix
-    """
-    if 2 * abs(mu[NUM][i, j]) > abs(mu[DEN][i, j]):
-        q = ZZ(round(mu[NUM][i, j] / mu[DEN][i, j]))
-        basis[i] -= q * basis[j]
-        for l in xsrange(j + 1):
-            mu[NUM][i, l] = mu[NUM][i, l] * mu[DEN][j, l] - q * mu[DEN][i, l] * mu[NUM][j, l]
-            mu[DEN][i, l] *= mu[DEN][j, l]
-            d = gcd(mu[NUM][i, l], mu[DEN][i, l])
-            mu[NUM][i, l] //= d
-            mu[DEN][i, l] //= d
-    return basis, mu
+load("fracGSO.sage")
+load("fracSize.sage")
 
 def update_gso_swap(mu: sage.matrix.matrix_integer_dense.Matrix_integer_dense, B: sage.modules.vector_integer_dense.Vector_integer_dense, k: int, n: int) -> tuple:
     """Update Gram-Schmidt orthogonalization informations by exchanging two basis vector b_{k-1} and b_k
@@ -165,7 +75,6 @@ def frac_lll(basis: sage.matrix.matrix_integer_dense.Matrix_integer_dense, n: in
         sage.matrix.matrix_integer_dense.Matrix_integer_dense: reduced basis
     """
     B, mu = frac_gso(basis, n)
-    # B, mu = gso(basis, n)
     k = 1
     while k < n:
         for j in xsrange(k - 1, -1, -1):
