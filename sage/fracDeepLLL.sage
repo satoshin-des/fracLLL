@@ -53,7 +53,7 @@ def update_gso_deep_insertion(mu: list, B: list, G: ZZ, i: int, k: int, n: int) 
         pass
 """
 
-def update_gso_conti_swap(mu: list, B: list, i: int, k: int, n: int) -> tuple:
+def update_gso_deep_insertion(mu: list, B: list, i: int, k: int, n: int) -> tuple:
     C_num = copy(B[NUM])
     C_den = copy(B[DEN])
     nu_num = copy(mu[NUM])
@@ -138,7 +138,7 @@ def frac_deep_lll(basis: sage.matrix.matrix_integer_dense.Matrix_integer_dense, 
                     sum += mu[NUM][k, j] * B[NUM][j] * prod // (mu[DEN][k, j] ^ 2 * B[DEN][j])
             else:
                 basis = deep_insertion(basis, i, k)
-                B, mu = update_gso_conti_swap(mu, B, i, k, n)
+                B, mu = update_gso_deep_insertion(mu, B, i, k, n)
                 # for j in xsrange(k, i, -1):
                 #     B, mu = update_gso_swap(mu, B, j, n)
                 
